@@ -8,10 +8,6 @@ git clone --recursive https://github.com/AidanSun05/drone
 
 `--recursive` is needed to pull in submodules (third-party ROS 2 packages).
 
-## TODO
-
-- Allow hover node to take in user input to change target hover height
-
 ## Nodes
 
 ### drone_control
@@ -97,3 +93,9 @@ Run this application to make sure the stereo camera is connected correctly.
 ```shell
 python3 -m depthai_viewer
 ```
+
+## Collaborators
+Katrina (https://github.com/Katrina-1)
+Victor Chen (https://github.com/Goldenglow1427)
+Aidan Sun (https://github.com/AidanSun05)
+William Frabizio (https://github.com/memebot50000)
