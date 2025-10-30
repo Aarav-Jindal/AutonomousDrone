@@ -3,7 +3,7 @@
 ## Clone repository
 
 ```shell
-git clone --recursive https://github.com/AidanSun05/drone
+git clone --recursive https://github.com/AaravJindak/AutonomousDrone
 ```
 
 `--recursive` is needed to pull in submodules (third-party ROS 2 packages).
