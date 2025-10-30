@@ -2,11 +2,71 @@
 
 ## Clone repository
 
+Tested on Ubuntu 22.04 + ROS 2 Humble and PX4 v1.14.
+
+### 1) Prereqs
+
 ```shell
-https://github.com/Aarav-Jindal/AutonomousDrone.git
+sudo apt update
+sudo apt install -y git python3-colcon-common-extensions python3-vcstool \
+  build-essential cmake python3-pip
+# Optional (useful tools)
+sudo apt install -y ros-humble-rqt* ros-humble-rviz2 ros-humble-gazebo-ros-pkgs
 ```
 
-`--recursive` is needed to pull in submodules (third-party ROS 2 packages).
+### 2) Clone this repo
+```shell
+git clone https://github.com/Aarav-Jindal/AutonomousDrone.git
+cd AutonomousDrone
+```
+
+### 3) Bring in PX4 ROS 2 interfaces inside src/
+
+Option A — Git submodules
+```shell
+git submodule add https://github.com/PX4/px4_msgs.git src/px4_msgs
+git submodule add https://github.com/PX4/px4_ros_com.git src/px4_ros_com
+git submodule update --init --recursive
+```
+
+
+### 4) Resolve deps + build
+
+```shell
+# rosdep (first time)
+sudo rosdep init 2>/dev/null || true
+rosdep update
+
+# install missing deps for all packages in src/
+rosdep install --from-paths src --ignore-src -y --rosdistro humble
+
+# build
+colcon build --symlink-install
+
+# source (add to ~/.bashrc for convenience)
+source install/setup.bash
+echo "source $(pwd)/install/setup.bash" >> ~/.bashrc
+```
+
+### 5) Connect PX4 ↔ ROS 2
+A) Real drone over UDP
+
+On companion computer / laptop:
+```shell
+source install/setup.bash
+ros2 run px4_ros_com micrortps_agent -t UDP
+```
+
+C) SITL (Gazebo)
+
+Launch PX4 SITL with RTPS enabled (per PX4 docs), then:
+```shell
+source install/setup.bash
+ros2 run px4_ros_com micrortps_agent -t UDP
+```
+
+The micrortps_agent exposes /fmu/in/* and /fmu/out/* topics used by your control nodes.
+
 
 ## Nodes
 
