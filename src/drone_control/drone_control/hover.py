@@ -91,7 +91,7 @@ class Hover(Node):
 
             trajectory_setpoint_msg = TrajectorySetpoint()
             trajectory_setpoint_msg.timestamp = self.get_clock().now().nanoseconds // 1000  
-            trajectory_setpoint_msg.position = [0, 0, self.target_height]  
+            trajectory_setpoint_msg.position = [0, 0, float(self.target_height)]  
             trajectory_setpoint_msg.yaw = float('nan')  # NaN to ignore yaw
             self.control_publisher_.publish(trajectory_setpoint_msg)
 
