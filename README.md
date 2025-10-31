@@ -23,13 +23,13 @@ sudo apt install -y ros-humble-rqt* ros-humble-rviz2 ros-humble-gazebo-ros-pkgs
 ## 2. Clone this Repository
 
 ```shell
-git clone https://github.com/Aarav-Jindal/AutonomousDrone.git
+git clone --recursive https://github.com/Aarav-Jindal/AutonomousDrone.git
 cd AutonomousDrone
 ```
 
 ---
 
-## 3. Bring in PX4 ROS 2 Interfaces
+## 3. Bring in PX4 ROS 2 Interfaces (If they are missing)
 
 ```shell
 git submodule add https://github.com/PX4/px4_msgs.git src/px4_msgs
