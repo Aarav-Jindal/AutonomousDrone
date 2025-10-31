@@ -61,29 +61,110 @@ echo "source $(pwd)/install/setup.bash" >> ~/.bashrc
 
 ## 5. Connect PX4 ↔ ROS 2
 
-### A) Real Drone (over UDP)
+PX4 communicates with ROS 2 through a **DDS bridge**.  
+For PX4 v1.14+ (recommended), use the **Micro XRCE-DDS Agent**; older versions use the legacy `micrortps_agent`.
 
-On companion computer or laptop:
+---
+
+### A) Install PX4-Autopilot and Micro XRCE-DDS Agent
 
 ```shell
-source install/setup.bash
-ros2 run px4_ros_com micrortps_agent -t UDP
+# Clone PX4-Autopilot
+cd ~
+git clone https://github.com/PX4/PX4-Autopilot.git --recursive
+cd PX4-Autopilot
+
+# Install PX4 dependencies
+bash ./Tools/setup/ubuntu.sh
+
+# Build PX4 SITL with Gazebo
+make px4_sitl gz_x500
+```
+
+Then install the **Micro XRCE-DDS Agent** (needed for PX4 ↔ ROS 2 communication):
+
+```shell
+sudo apt install libasio-dev libtinyxml2-dev
+git clone https://github.com/eProsima/Micro-XRCE-DDS-Agent.git
+cd Micro-XRCE-DDS-Agent
+mkdir build && cd build
+cmake ..
+make
+sudo make install
+sudo ldconfig
+```
+
+Verify installation:
+
+```shell
+MicroXRCEAgent --version
 ```
 
 ---
 
-### B) SITL (Gazebo)
+### B) Run PX4 SITL + ROS 2 Bridge
 
-1. Launch PX4 SITL with RTPS enabled
+Open three terminals (in this order):
+
+#### 1️⃣ Start the Micro XRCE-DDS Agent
 ```shell
+pkill -f MicroXRCEAgent || true
+MicroXRCEAgent udp4 -p 8888 -v 6
+```
+
+#### 2️⃣ Launch PX4 SITL (Gazebo)
+```shell
+cd ~/PX4-Autopilot
 make px4_sitl gz_x500
 ```
-3. Run the agent in a new terminal:
+
+Expected log:
+```
+INFO  [uxrce_dds_client] init UDP agent IP:127.0.0.1, port:8888
+INFO  [uxrce_dds_client] time sync converged
+```
+
+#### 3️⃣ Run a ROS 2 node
+```shell
+cd ~/Desktop/AutonomousDrone
+source install/setup.bash
+ros2 run drone_control hover
+```
+
+---
+
+### C) Install QGroundControl
+
+**QGroundControl (QGC)** is used for monitoring, telemetry, and parameter tuning.
 
 ```shell
-source install/setup.bash
-ros2 run px4_ros_com micrortps_agent -t UDP
+cd ~
+wget https://d176tv9ibo4jno.cloudfront.net/latest/QGroundControl.AppImage
+chmod +x QGroundControl.AppImage
+./QGroundControl.AppImage
 ```
+
+It auto-connects to PX4 SITL on UDP port `14550`.
+
+---
+
+### D) Verify PX4 ↔ ROS 2 Connection
+
+```shell
+ros2 topic list | grep fmu
+```
+
+Expected topics:
+
+```
+/fmu/in/offboard_control_mode
+/fmu/in/trajectory_setpoint
+/fmu/in/vehicle_command
+/fmu/out/vehicle_odometry
+/fmu/out/vehicle_status
+```
+
+If you see these, PX4 and ROS 2 are successfully connected.
 
 ---
 
