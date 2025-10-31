@@ -210,20 +210,20 @@ src/
 
 ---
 
-## 9. Highlights
+## 9. Acknowledgments
 
-- Native ROS 2 ↔ PX4 offboard control  
-- Works with Gazebo (gz-sim) or real hardware  
-- Demonstrates autonomy, control, and perception integration  
+- **PX4 Autopilot** — Open-source flight control stack for drones  
+  [https://github.com/PX4/PX4-Autopilot](https://github.com/PX4/PX4-Autopilot)
+- **ROS 2 Humble Hawksbill** — Middleware for robotic systems  
+  [https://docs.ros.org/en/humble](https://docs.ros.org/en/humble)
+- **eProsima Micro XRCE-DDS Agent** — Lightweight DDS communication layer  
+  [https://github.com/eProsima/Micro-XRCE-DDS-Agent](https://github.com/eProsima/Micro-XRCE-DDS-Agent)
+- **Gazebo (gz-sim)** — Open robotics simulator  
+  [https://gazebosim.org](https://gazebosim.org)
+- **QGroundControl** — MAVLink-based ground control software  
+  [https://qgroundcontrol.com](https://qgroundcontrol.com)
 
----
-
-## 11. Acknowledgments
-
-- **PX4 Autopilot:** [https://github.com/PX4/PX4-Autopilot](https://github.com/PX4/PX4-Autopilot)  
-- **PX4 ROS 2 Interface:** [https://github.com/PX4/px4_ros_com](https://github.com/PX4/px4_ros_com)  
-- **Gazebo Simulation Environment:** [https://gazebosim.org](https://gazebosim.org)  
-
+  
 ## Other software
 
 ### V4L2 ROS 2 node
