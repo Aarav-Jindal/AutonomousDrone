@@ -31,8 +31,6 @@ cd AutonomousDrone
 
 ## 3. Bring in PX4 ROS 2 Interfaces
 
-### Option A — Using Git Submodules
-
 ```shell
 git submodule add https://github.com/PX4/px4_msgs.git src/px4_msgs
 git submodule add https://github.com/PX4/px4_ros_com.git src/px4_ros_com
