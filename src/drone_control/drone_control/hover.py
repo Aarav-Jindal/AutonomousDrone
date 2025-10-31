@@ -13,7 +13,7 @@ class Hover(Node):
         super().__init__('height_control_node')
 
         # Targets (NED: up is negative z)
-        self.target_height = 1.0          # meters up
+        self.target_height = 5.0          # meters up
         self.takeoff_vel   = -0.8         # m/s in NED (negative = up)
         self.takeoff_ticks = 60           # ~3s at 20 Hz of velocity climb before position hold
 
