@@ -1,123 +1,153 @@
 # ROS 2 Drone Workspace
 
-## Clone repository
+**Tested on:** Ubuntu 22.04 + ROS 2 Humble + PX4 v1.14
 
-Tested on Ubuntu 22.04 + ROS 2 Humble and PX4 v1.14.
+This repository integrates PX4 with ROS 2 for autonomous drone control in both SITL (Gazebo) and hardware setups.
 
-### 1) Prereqs
+**All things under AutonomousDrone/src/DroneControl are my work**
+
+
+## 1. Prerequisites
 
 ```shell
 sudo apt update
 sudo apt install -y git python3-colcon-common-extensions python3-vcstool \
   build-essential cmake python3-pip
-# Optional (useful tools)
+
+# Optional (recommended tools)
 sudo apt install -y ros-humble-rqt* ros-humble-rviz2 ros-humble-gazebo-ros-pkgs
 ```
 
-### 2) Clone this repo
+---
+
+## 2. Clone this Repository
+
 ```shell
 git clone https://github.com/Aarav-Jindal/AutonomousDrone.git
 cd AutonomousDrone
 ```
 
-### 3) Bring in PX4 ROS 2 interfaces inside src/
+---
 
-Option A — Git submodules
+## 3. Bring in PX4 ROS 2 Interfaces
+
+### Option A — Using Git Submodules
+
 ```shell
 git submodule add https://github.com/PX4/px4_msgs.git src/px4_msgs
 git submodule add https://github.com/PX4/px4_ros_com.git src/px4_ros_com
 git submodule update --init --recursive
 ```
 
+---
 
-### 4) Resolve deps + build
+## 4. Resolve Dependencies and Build
 
 ```shell
-# rosdep (first time)
+# rosdep (first time only)
 sudo rosdep init 2>/dev/null || true
 rosdep update
 
-# install missing deps for all packages in src/
+# Install dependencies for all packages
 rosdep install --from-paths src --ignore-src -y --rosdistro humble
 
-# build
+# Build workspace
 colcon build --symlink-install
 
-# source (add to ~/.bashrc for convenience)
+# Source setup (add to ~/.bashrc for convenience)
 source install/setup.bash
 echo "source $(pwd)/install/setup.bash" >> ~/.bashrc
 ```
 
-### 5) Connect PX4 ↔ ROS 2
-A) Real drone over UDP
+---
 
-On companion computer / laptop:
+## 5. Connect PX4 ↔ ROS 2
+
+### A) Real Drone (over UDP)
+
+On companion computer or laptop:
+
 ```shell
 source install/setup.bash
 ros2 run px4_ros_com micrortps_agent -t UDP
 ```
 
-C) SITL (Gazebo)
+---
 
-Launch PX4 SITL with RTPS enabled (per PX4 docs), then:
+### B) SITL (Gazebo)
+
+1. Launch PX4 SITL with RTPS enabled (per PX4 documentation).  
+2. Run the agent in a new terminal:
+
 ```shell
 source install/setup.bash
 ros2 run px4_ros_com micrortps_agent -t UDP
 ```
 
-The micrortps_agent exposes /fmu/in/* and /fmu/out/* topics used by your control nodes.
+The `micrortps_agent` exposes:
 
+- `/fmu/in/*` → PX4 input topics  
+- `/fmu/out/*` → PX4 output topics  
 
-## Nodes
+These are used by your control and sensing nodes.
+
+---
+
+## 6. Nodes Overview
 
 ### drone_control
 
-- arm_disarm_node
-  - Publishes to:
-    - `/fmu/in/vehicle_command` (publishes commands to either arm or disarm the drone; type `px4_msgs.msg.VehicleCommand`)
-  - Serves to:
-    - `/arm_disarm` (receives information to determine the new state of the drone; type `drone_msgs.srv.ArmDisarm`)
-- hover_node
-  -Publishes to
-    - `/fmu/in/vehicle_command` (publishes commands to either arm or disarm the drone; type `px4_msgs.msg.VehicleCommand`)
-    - `/fmu/in/trajectory_setpoint` (publishes certain position/acceleration/velocity/yaw for the drone to recieve and apply; type `px4_msgs.msg.   TrajectorySetpoint`)
-  - Subscribes to
-    - `/fmu/out/vehicle_local_position` (reads to current position of the drone in the LNED frame); type `px4_msgs.msg.VehicleLocalPosition`
+| Node | Publishes | Subscribes | Description |
+|------|------------|-------------|--------------|
+| **arm_disarm_node** | `/fmu/in/vehicle_command` (`px4_msgs/msg/VehicleCommand`) | `/arm_disarm` (`drone_msgs/srv/ArmDisarm`) | Arms/disarms the drone via service request |
+| **hover_node** | `/fmu/in/vehicle_command` (`px4_msgs/msg/VehicleCommand`), `/fmu/in/trajectory_setpoint` (`px4_msgs/msg/TrajectorySetpoint`) | `/fmu/out/vehicle_local_position` (`px4_msgs/msg/VehicleLocalPosition`) | Hovers at a target altitude using offboard control |
+| **ocean_motion** | `/fmu/in/trajectory_setpoint` | `/fmu/out/vehicle_odometry` | Follows a smooth spline trajectory from `path.yaml` |
+| **spin_2_win** | `/fmu/in/trajectory_setpoint` | `/fmu/out/vehicle_odometry` | Rotational yaw demo |
+| **line_following** | `/fmu/in/trajectory_setpoint` | `/image_raw`, `/fmu/out/vehicle_odometry` | Uses camera input for line tracking |
+| **obstacle_avoidance** | `/fmu/in/trajectory_setpoint` | `/scan`, `/fmu/out/vehicle_odometry` | Avoids obstacles using sensor data |
 
-### drone_sensing
+---
 
-- line_detection
-  - Subscribes to:
-    - `/image_raw` (type `sensor_msgs.msg.Image`)
-  - Publishes to:
-    - `/line_detect_regression` (publishes [a, b] coefficients in the equation of the regressed line `y = a + bx` and if there is a detection; type `drone_msgs.msg.LineDetection`)
-- optical_flow_subscriber
-  - Subscribes to:
-    - TODO: Find topic the Pixhawk publishes to (type px4_msgs.msg.SensorOpticalFlow)
-  - Publishes to:
-    - TODO: Figure out what to publish
-- stereo_camera
-  This node is implemented in `drone_sensing/drone_sensing/stereo_camera.py`;
-  - Publishes to:
-    - `/drone_sensing/stereo_camera_raw`:
-      The node publishes the RGB image data received from the stereo camera to this topic in `sensor_msgs.msg.Image`;
+## 7. Example Runs
 
-      The resolution of the image is set as 1000*1000, and the frame rate is 30 images per second.
-- ar_tag_detecter
-  This node is implemented in `drone_sensing/drone_sensing/ar_tag_detection.py`;
-  - Subscribes to:
-    - `/drone_sensing/stereo_camera_raw`:
-      The node receives the RGB image data from the stereo camera to identify the AR tags in the image.
-  - Publishes to:
-    - `/drone_sensing/ar_tag_IDs`
-      The node publishes the ID of the AR tags detected (in particular order) to the topic using `std_msgs.msg.Int32MultiArray`;
-    - `/drone_sensing/ar_tag_locs`
-      The node publishes the locations of the AR tags detected (in the same order as the IDs) to the topic using `std_msgs.msg.Int32MultiArray`;
+```shell
+# Hover demo
+ros2 run drone_control hover
 
-      Each AR tag is stored using consecutive 8 integers in the array, which shows $(x_1,y_1),(x_2,y_2),(x_3,y_3),(x_4,y_4)$, respectively.
-- altitude_publisher
-  - Publishes to:
-    - `/altitude_reading` (publishes the distance in meters detected by the range finder; type `std_msgs.msg.Float32`)
+# Ocean motion (requires path.yaml)
+ros2 run drone_control ocean_motion --ros-args -p file:=path.yaml -p path_num:="1"
+
+# Spin-in-place demo
+ros2 run drone_control spin_2_win
+```
+
+---
+
+## 8. Project Structure
+
+```
+src/
+├── drone_control/         # Flight control nodes
+├── drone_sensing/         # Vision, LiDAR, and localization nodes
+├── px4_msgs/              # PX4 ROS 2 message definitions
+└── px4_ros_com/           # PX4 communication bridge (RTPS)
+```
+
+---
+
+## 9. Highlights
+
+- Native ROS 2 ↔ PX4 offboard control  
+- Works with Gazebo (gz-sim) or real hardware  
+- Demonstrates autonomy, control, and perception integration  
+
+---
+
+## 11. Acknowledgments
+
+- **PX4 Autopilot:** [https://github.com/PX4/PX4-Autopilot](https://github.com/PX4/PX4-Autopilot)  
+- **PX4 ROS 2 Interface:** [https://github.com/PX4/px4_ros_com](https://github.com/PX4/px4_ros_com)  
+- **Gazebo Simulation Environment:** [https://gazebosim.org](https://gazebosim.org)  
 
 ## Other software
 
