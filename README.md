@@ -4,7 +4,7 @@
 
 This repository integrates PX4 with ROS 2 for autonomous drone control in both SITL (Gazebo) and hardware setups.
 
-**All things under AutonomousDrone/src/DroneControl are my work**
+**All things under AutonomousDrone/src/drone_control are my work**
 
 
 ## 1. Prerequisites
