@@ -74,20 +74,16 @@ ros2 run px4_ros_com micrortps_agent -t UDP
 
 ### B) SITL (Gazebo)
 
-1. Launch PX4 SITL with RTPS enabled (per PX4 documentation).  
-2. Run the agent in a new terminal:
+1. Launch PX4 SITL with RTPS enabled
+```shell
+make px4_sitl gz_x500
+```
+3. Run the agent in a new terminal:
 
 ```shell
 source install/setup.bash
 ros2 run px4_ros_com micrortps_agent -t UDP
 ```
-
-The `micrortps_agent` exposes:
-
-- `/fmu/in/*` → PX4 input topics  
-- `/fmu/out/*` → PX4 output topics  
-
-These are used by your control and sensing nodes.
 
 ---
 
