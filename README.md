@@ -1,5 +1,7 @@
 # ROS 2 Drone Workspace
 
+_Saved Copy of Original Repository, which was archived._
+
 **Tested on:** Ubuntu 22.04 + ROS 2 Humble + PX4 v1.14
 
 This repository integrates PX4 with ROS 2 for autonomous drone control in both SITL (Gazebo) and hardware setups.
@@ -264,5 +266,3 @@ Katrina (https://github.com/Katrina-1)
 Victor Chen (https://github.com/Goldenglow1427)
 Aidan Sun (https://github.com/AidanSun05)
 William Frabizio (https://github.com/memebot50000)
-
-_Saved Copy of Original Repository, which was archived._
